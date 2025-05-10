@@ -21,17 +21,29 @@ class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(28*28, 128)
-        self.fc2 = nn.Linear(128, 10)
+        self.c1 = nn.Conv2d(1, 6, kernel_size=5, stride=1, padding=2) # (bsz, 6, 28, 28)
+        self.s2 = nn.AvgPool2d(kernel_size=2, stride=2) # (bsz, 6, 14, 14)
+        self.c3 = nn.Conv2d(6, 16, kernel_size=5) # (bsz, 16, 10, 10)
+        self.s4 = nn.AvgPool2d(kernel_size=2, stride=2) # (bsz, 16, 5, 5)
+        self.f5 = nn.Conv2d(16, 120, kernel_size=5) # (bsz, 120, 1, 1)
+        self.f6 = nn.Linear(120, 84) # (bsz, 84)
+        self.f7 = nn.Linear(84, 10) # (bsz, 10)
 
-    def forward(self, x): # (bsz, 1, 28, 28)
-        x = self.flatten(x) # (bsz, 784)
-        x = F.relu(self.fc1(x)) # (bsz, 128)
-        return self.fc2(x) # (bsz, 10)
+    def forward(self, x):
+        x = F.relu(self.c1(x))
+        x = self.s2(x)
+        x = F.relu(self.c3(x))
+        x = self.s4(x)
+        x = F.relu(self.f5(x))
+        x = self.flatten(x) # flatten to (bsz, 120)
+        x = F.relu(self.f6(x))
+        return self.f7(x) 
 
-# model = Net()
-# model.load_state_dict(torch.load("/Users/jucy/Desktop/GUI/model_weights.pt", map_location=torch.device('cpu')))
-# model.eval()
+net = Net()
+
+model = Net()
+model.load_state_dict(torch.load("/Users/jucy/Desktop/ICS-chat-system/chatsystem/model_weights.pt", map_location=torch.device('cpu')))
+model.eval()
 
 # GUI class for the chat
 class GUI:
@@ -336,7 +348,7 @@ class GUI:
         # Normalize pixel values to 0–1
         img_array = np.array(img).astype("float32") / 255.0
         img_array = img_array.reshape(1, 1, 28, 28)  # For CNN input shape
-        img_tensor = torch.from_numpy(img_array).unsqueeze(0).unsqueeze(0)
+        img_tensor = torch.from_numpy(img_array)
         
         # Predict using your ML model
         with torch.no_grad():

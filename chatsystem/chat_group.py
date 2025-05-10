@@ -23,6 +23,7 @@ class Group:
         self.members = {}
         self.chat_grps = {}
         self.grp_ever = 0
+        self.connections = set()
 
     def join(self, name):
         self.members[name] = S_ALONE
@@ -47,6 +48,9 @@ class Group:
         return found, group_key
 
     def connect(self, me, peer):
+        self.members[me]   = peer
+        self.members[peer] = me
+        self.connections.add(tuple(sorted([me, peer])))
         peer_in_group = False
         #if peer is in a group, join it
         peer_in_group, group_key = self.find_group(peer)
@@ -69,6 +73,11 @@ class Group:
 
     def disconnect(self, me):
         # find myself in the group, quit
+        peer = self.members.get(me, '')
+        if peer:
+            self.connections.discard(tuple(sorted([me, peer])))
+            self.members[peer] = ''
+        self.members[me] = ''
         in_group, group_key = self.find_group(me)
         if in_group == True:
             self.chat_grps[group_key].remove(me)
@@ -96,6 +105,8 @@ class Group:
         member_list = str(self.members)
         grp_list = str(self.chat_grps)
         return member_list, grp_list
+    def is_connected(self, user1, user2):
+        return user1 in self.members and self.members[user1] == user2
 
     def list_me(self, me):
         # return a list, "me" followed by other peers in my group
@@ -108,6 +119,9 @@ class Group:
                     if member != me:
                         my_list.append(member)
         return my_list
+    def already_connected(self, a, b):
+        in_g, gid = self.find_group(a)
+        return in_g and (b in self.chat_grps[gid])
 
 if __name__ == "__main__":
     g = Group()

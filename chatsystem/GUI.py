@@ -29,9 +29,9 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x)) # (bsz, 128)
         return self.fc2(x) # (bsz, 10)
 
-model = Net()
-model.load_state_dict(torch.load("/Users/jucy/Desktop/GUI/model_weights.pt", map_location=torch.device('cpu')))
-model.eval()
+# model = Net()
+# model.load_state_dict(torch.load("/Users/jucy/Desktop/GUI/model_weights.pt", map_location=torch.device('cpu')))
+# model.eval()
 
 # GUI class for the chat
 class GUI:

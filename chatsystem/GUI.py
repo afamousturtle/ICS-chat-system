@@ -255,7 +255,7 @@ class GUI:
         self.pet_x_pos = 0
 
         # Add to writing_window
-        self.pet_label = Label(self.writing_window, bg="#FFF1F3", bd=0, highlightthickness=0)
+        self.pet_label = Label(self.writing_window, bg="#FDE2E4", bd=0, highlightthickness=0)
         self.writing_window.update_idletasks()
 
         window_height = self.writing_window.winfo_height()

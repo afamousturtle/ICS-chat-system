@@ -1,9 +1,6 @@
-            if self.group.already_connected(from_name, to_name):
-                key = tuple(sorted((from_name, to_name)))
-                if key in self.handshake_done:
-                    peer_key = self.user_pubkeys.get(to_name, "")
-                    mysend(from_sock, json.dumps({
-                        "action":"connect", "status":"success",
-                        "peer_pubkey": peer_key
-                    }))
-                    return   
+        if response["status"] == "ok":
+            if action == "register":
+                # 注册成功后自动登录
+                login_msg = json.dumps({"action": "login", "name": name, "password": password})
+                self.send(login_msg)
+                login_resp = json.loads(self.recv())

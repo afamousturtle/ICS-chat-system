@@ -74,17 +74,18 @@ class GUI:
         response = json.loads(self.recv())
 
         if response["status"] == "ok":
-            self.login.destroy()
-            self.sm.set_state(S_LOGGEDIN)
-            self.sm.set_myname(name)
-            self.layout(name)
-            self.textCons.config(state=NORMAL)
-            self.textCons.insert(END, menu + "\n\n")
-            self.textCons.config(state=DISABLED)
-            self.textCons.see(END)
-            process = threading.Thread(target=self.proc)
-            process.daemon = True
-            process.start()
+            if action == "register":
+                # 注册成功后自动登录
+                login_msg = json.dumps({"action": "login", "name": name, "password": password})
+                self.send(login_msg)
+                login_resp = json.loads(self.recv())
+
+                if login_resp["status"] == "ok":
+                    self._login_success(name)
+                else:
+                    messagebox.showerror("Auto Login Failed", "Registration succeeded, but auto login failed. Please try logging in manually.")
+            else:
+                self._login_success(name)
 
         elif response["status"] == "duplicate":
             messagebox.showerror("Error", "This user is already logged in elsewhere.")
@@ -93,6 +94,21 @@ class GUI:
                 messagebox.showerror("Login Failed", "Invalid username or password.")
             else:
                 messagebox.showerror("Registration Failed", "Username already exists.")
+
+    def _login_success(self, name):
+        """统一的登录成功后布局处理函数"""
+        self.login.destroy()
+        self.sm.set_state(S_LOGGEDIN)
+        self.sm.set_myname(name)
+        self.layout(name)
+        self.textCons.config(state=NORMAL)
+        self.textCons.insert(END, menu + "\n\n")
+        self.textCons.config(state=DISABLED)
+        self.textCons.see(END)
+        process = threading.Thread(target=self.proc)
+        process.daemon = True
+        process.start()
+
 
   
     # The main layout of the chat
@@ -205,21 +221,24 @@ class GUI:
         self.my_msg = msg
         # print(msg)
         self.entryMsg.delete(0, END)
-
+        
     def proc(self):
         while True:
-            read, write, error = select.select([self.socket], [], [], 0)
+            read, _, _ = select.select([self.socket], [], [], 0.1)
             peer_msg = []
             if self.socket in read:
-                with self.socket_lock:
+                with socket_lock:
                     peer_msg = self.recv()
+
             if len(self.my_msg) > 0 or len(peer_msg) > 0:
-                self.system_msg += self.sm.proc(self.my_msg, peer_msg)
-                self.my_msg = ""
-                self.textCons.config(state=NORMAL)
-                self.textCons.insert(END, self.system_msg + "\n\n")
-                self.textCons.config(state=DISABLED)
-                self.textCons.see(END)
+                output = self.sm.proc(self.my_msg, peer_msg)
+                self.my_msg = ""  # 清空输入消息
+                if output:        # 仅在有输出时插入
+                    self.textCons.config(state=NORMAL)
+                    self.textCons.insert(END, output + "\n\n")
+                    self.textCons.config(state=DISABLED)
+                    self.textCons.see(END)
+
 
 
     def writingPad(self):

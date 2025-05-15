@@ -102,13 +102,16 @@ class Server:
         try:
             msg = json.loads(myrecv(sock))
             print("login:", msg)
-            if msg.get("action") == "login":
-                name = msg["name"]
-                password = msg.get("password", "")
 
+            action = msg.get("action")
+            name = msg.get("name", "")
+            password = msg.get("password", "")
+
+            if action == "login":
                 if authenticate(name, password):
                     if not self.group.is_member(name):
-                        self.new_clients.remove(sock)
+                        if sock in self.new_clients:
+                            self.new_clients.remove(sock)
                         self.logged_name2sock[name] = sock
                         self.logged_sock2name[sock] = name
                         if name not in self.indices:
@@ -126,21 +129,21 @@ class Server:
                     mysend(sock, json.dumps({"action": "login", "status": "failed"}))
                     print(name + ' failed login attempt')
 
-            elif msg.get("action") == "register":
-                name = msg["name"]
-                password = msg.get("password", "")
+            elif action == "register":
                 if user_registration(name, password):
                     mysend(sock, json.dumps({"action": "register", "status": "ok"}))
                     print(name + ' registered successfully')
                 else:
                     mysend(sock, json.dumps({"action": "register", "status": "failed"}))
                     print(name + ' registration failed (already exists)')
+
             else:
                 print("login: invalid message")
 
         except Exception as e:
             print(f"[login error] {e}")
             self.logout(sock)
+
 
 
     def logout(self, sock):
@@ -323,6 +326,6 @@ class Server:
 def main():
     server = Server()
     server.run()
-
+    
 if __name__ == "__main__":
     main()

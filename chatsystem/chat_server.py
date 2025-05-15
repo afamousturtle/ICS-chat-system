@@ -89,7 +89,7 @@ class Server:
         self.handshake_done = set()  
         self.sonnet = indexer.PIndex("AllSonnets.txt")
         self.model = Net()
-        self.model.load_state_dict(torch.load("/Users/mia/Desktop/chatsystem/chatsystem/chatsystem/model_weights.pt", map_location=torch.device('cpu')))
+        self.model.load_state_dict(torch.load("model_weights.pt", map_location=torch.device('cpu')))
         self.model.eval()
 
     def new_client(self, sock):

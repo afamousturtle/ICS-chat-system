@@ -10,7 +10,7 @@ from tkinter import font
 from tkinter import ttk
 from chat_utils import *
 import json
-from PIL import Image, ImageGrab, ImageOps
+from PIL import Image, ImageGrab, ImageOps, ImageTk, ImageSequence
 import numpy as np
 from tkinter import messagebox
 
@@ -28,6 +28,7 @@ class GUI:
         self.my_msg = ""
         self.system_msg = ""
         self.socket_lock = threading.Lock()
+    
     def login(self):
         self.login = Toplevel()
         self.login.title("Login / Register")
@@ -57,9 +58,7 @@ class GUI:
         self.go_register = Button(self.login, text="Register", font="Helvetica 12 bold",
                                 command=lambda: self.goAhead("register"))
         self.go_register.place(relx=0.55, rely=0.65, relwidth=0.25, relheight=0.15)
-
         self.writing_window.mainloop()
-
   
     def goAhead(self, action):
         name = self.entryName.get().strip()
@@ -75,7 +74,7 @@ class GUI:
 
         if response["status"] == "ok":
             if action == "register":
-                # 注册成功后自动登录
+                
                 login_msg = json.dumps({"action": "login", "name": name, "password": password})
                 self.send(login_msg)
                 login_resp = json.loads(self.recv())
@@ -96,7 +95,7 @@ class GUI:
                 messagebox.showerror("Registration Failed", "Username already exists.")
 
     def _login_success(self, name):
-        """统一的登录成功后布局处理函数"""
+        
         self.login.destroy()
         self.sm.set_state(S_LOGGEDIN)
         self.sm.set_myname(name)
@@ -109,11 +108,8 @@ class GUI:
         process.daemon = True
         process.start()
 
-
-  
     # The main layout of the chat
     def layout(self,name):
-        
         self.name = name
         # to show chat window
         self.writing_window.deiconify()
@@ -141,7 +137,7 @@ class GUI:
           
         self.textCons = Text(self.writing_window,
                              width = 20, 
-                             height = 2,
+                             height = 80,
                              bg = "#17202A",
                              fg = "#EAECEE",
                              font = "Helvetica 14", 
@@ -186,7 +182,7 @@ class GUI:
                              relheight = 0.06, 
                              relwidth = 0.22)
           
-        self.textCons.config(cursor = "arrow")
+        self.buttonMsg.config(cursor = "arrow")
 
         # create a number writing button
         self.buttonWrite = Button(self.labelBottom,
@@ -201,7 +197,7 @@ class GUI:
                              relheight = 0.06, 
                              relwidth = 0.22)
           
-        self.textCons.config(cursor = "arrow")
+        self.buttonWrite.config(cursor = "arrow")
           
         # create a scroll bar
         scrollbar = Scrollbar(self.textCons)
@@ -214,7 +210,92 @@ class GUI:
         scrollbar.config(command = self.textCons.yview)
           
         self.textCons.config(state = DISABLED)
-  
+        
+        # show the pet window
+        self.add_desktop_pet()
+    
+    def add_desktop_pet(self):
+        resize_width, resize_height = 64, 64
+        pet_gif_path = "pet.gif"
+        self.pet_gif = Image.open(pet_gif_path)
+
+        # Load original frames and mirrored frames
+        self.pet_frames_right = [
+            ImageTk.PhotoImage(
+                frame.copy().convert("RGBA").resize((resize_width, resize_height), Image.Resampling.LANCZOS)
+            )
+            for frame in ImageSequence.Iterator(self.pet_gif)
+        ]
+        self.pet_frames_left = [
+            ImageTk.PhotoImage(
+                ImageOps.mirror(
+                    frame.copy().convert("RGBA").resize((resize_width, resize_height), Image.Resampling.LANCZOS)
+                )
+            )
+            for frame in ImageSequence.Iterator(self.pet_gif)
+        ]
+
+        # Start with right-facing frames
+        self.pet_frames = self.pet_frames_right
+        self.pet_frame_index = 0
+        self.pet_direction = 1  # 1 for right, -1 for left
+        self.pet_speed = 2
+        self.pet_x_pos = 0
+
+        # Add to writing_window
+        self.pet_label = Label(self.writing_window, bg="#FFF1F3", bd=0, highlightthickness=0)
+        self.writing_window.update_idletasks()
+
+        window_height = self.writing_window.winfo_height()
+        pet_height = resize_height
+        margin_from_bottom = 140
+
+        pet_y = window_height - pet_height - margin_from_bottom
+        pet_x = self.writing_window.winfo_width() - resize_width - 20  # Right side
+
+        self.pet_label.place(x=pet_x, y=pet_y, width=resize_width, height=resize_height)
+
+        self.animate_pet()
+        self.pet_label.bind("<Button-1>", self.start_drag)
+        self.pet_label.bind("<B1-Motion>", self.do_drag)
+          
+    def animate_pet(self):
+        frame = self.pet_frames[self.pet_frame_index]
+        self.pet_label.config(image=frame)
+
+        self.pet_frame_index = (self.pet_frame_index + 1) % len(self.pet_frames)
+
+        # Move pet left/right
+        container_width = self.labelBottom.winfo_width()
+        pet_width = self.pet_label.winfo_width()
+        max_x = container_width - pet_width - 20
+
+        self.pet_x_pos += self.pet_speed * self.pet_direction
+
+        # Bounce logic
+        if self.pet_x_pos >= max_x:
+            self.pet_x_pos = max_x
+            self.pet_direction = -1
+            self.pet_frames = self.pet_frames_left
+        elif self.pet_x_pos <= 20:
+            self.pet_x_pos = 20
+            self.pet_direction = 1
+            self.pet_frames = self.pet_frames_right
+
+        self.pet_label.place(x=self.pet_x_pos, rely=0.07)
+
+        self.writing_window.after(100, self.animate_pet)
+
+    def start_drag(self, event):
+        self._drag_start_x = event.x_root - self.pet_label.winfo_x()
+        self._drag_start_y = event.y_root - self.pet_label.winfo_y()
+
+    def do_drag(self, event):
+        x = event.x_root - self._drag_start_x
+        y = event.y_root - self._drag_start_y
+        self.pet_label.place(x=x, y=y)
+
+
     # function to basically start the thread for sending messages
     def sendButton(self, msg):
         self.textCons.config(state = DISABLED)
@@ -249,14 +330,15 @@ class GUI:
         self.writing_window.configure(width = 300,
                               height = 400,
                               bg = "#17202A")
+        self.write()
         
         self.clearButton = Button(self.writing_window,
                                 text = "Clear",
                                 font = "Helvetica 10 bold", 
                                 width = 20,
                                 bg = "#ABB2B9",
-                                command = lambda : self.sendButton(self.clear()))
-        self.write()
+                                command = lambda : self.clear())
+
         self.clearButton.place(relx = 0.05,
                              rely = 0.85,
                              relheight = 0.1, 
@@ -269,7 +351,7 @@ class GUI:
                                 font = "Helvetica 10 bold", 
                                 width = 20,
                                 bg = "#ABB2B9",
-                                command = lambda : self.sendButton(self.submit()))
+                                command = lambda : self.submit())
         
         self.submitButton.place(relx = 0.40,
                              rely = 0.85,

@@ -32,33 +32,41 @@ class GUI:
         self.login = Toplevel()
         self.login.title("Login / Register")
         self.login.resizable(width=False, height=False)
-        self.login.configure(width=400, height=350)
+        self.login.configure(width=400, height=350, bg="#FFF1F3")  # 淡粉背景
 
         self.pls = Label(self.login, text="Login or Register to Continue",
-                        justify=CENTER, font="Helvetica 14 bold")
+                        justify=CENTER, font="Helvetica 14 bold",
+                        bg="#FFF1F3", fg="#2D2D2D")
         self.pls.place(relheight=0.15, relx=0.2, rely=0.07)
 
-        self.labelName = Label(self.login, text="Username:", font="Helvetica 12")
+        self.labelName = Label(self.login, text="Username:", font="Helvetica 12",
+                               bg="#FFF1F3", fg="#2D2D2D")
         self.labelName.place(relheight=0.1, relx=0.1, rely=0.25)
-        self.entryName = Entry(self.login, font="Helvetica 14")
+        self.entryName = Entry(self.login, font="Helvetica 14",
+                               bg="#EDE7F6", fg="#2D2D2D")
         self.entryName.place(relwidth=0.5, relheight=0.1, relx=0.35, rely=0.25)
 
-        self.labelPwd = Label(self.login, text="Password:", font="Helvetica 12")
+        self.labelPwd = Label(self.login, text="Password:", font="Helvetica 12",
+                              bg="#FFF1F3", fg="#2D2D2D")
         self.labelPwd.place(relheight=0.1, relx=0.1, rely=0.4)
-        self.entryPwd = Entry(self.login, font="Helvetica 14", show="*")
+        self.entryPwd = Entry(self.login, font="Helvetica 14", show="*",
+                              bg="#EDE7F6", fg="#2D2D2D")
         self.entryPwd.place(relwidth=0.5, relheight=0.1, relx=0.35, rely=0.4)
 
         self.entryName.focus()
 
         self.go_login = Button(self.login, text="Login", font="Helvetica 12 bold",
-                            command=lambda: self.goAhead("login"))
+                               bg="#FFB5A7", fg="#2D2D2D",
+                               command=lambda: self.goAhead("login"))
         self.go_login.place(relx=0.2, rely=0.65, relwidth=0.25, relheight=0.15)
 
         self.go_register = Button(self.login, text="Register", font="Helvetica 12 bold",
-                                command=lambda: self.goAhead("register"))
+                                  bg="#C1ECE4", fg="#2D2D2D",
+                                  command=lambda: self.goAhead("register"))
         self.go_register.place(relx=0.55, rely=0.65, relwidth=0.25, relheight=0.15)
 
         self.writing_window.mainloop()
+
 
   
     def goAhead(self, action):
@@ -122,10 +130,10 @@ class GUI:
                               height = False)
         self.writing_window.configure(width = 470,
                               height = 550,
-                              bg = "#17202A")
+                              bg = "#FFF1F3")
         self.labelHead = Label(self.writing_window,
-                             bg = "#17202A", 
-                              fg = "#EAECEE",
+                             bg = "#FFF1F3", 
+                              fg = "#3A3A3A",
                               text = self.name ,
                                font = "Helvetica 13 bold",
                                pady = 5)
@@ -133,7 +141,7 @@ class GUI:
         self.labelHead.place(relwidth = 1)
         self.line = Label(self.writing_window,
                           width = 450,
-                          bg = "#ABB2B9")
+                          bg = "#E8DFF5")
           
         self.line.place(relwidth = 1,
                         rely = 0.07,
@@ -142,8 +150,8 @@ class GUI:
         self.textCons = Text(self.writing_window,
                              width = 20, 
                              height = 2,
-                             bg = "#17202A",
-                             fg = "#EAECEE",
+                             bg = "#FDE2E4",
+                             fg = "#2D2D2D",
                              font = "Helvetica 14", 
                              padx = 5,
                              pady = 5)
@@ -153,15 +161,15 @@ class GUI:
                             rely = 0.08)
           
         self.labelBottom = Label(self.writing_window,
-                                 bg = "#ABB2B9",
+                                 bg = "#EDE7F6",
                                  height = 80)
           
         self.labelBottom.place(relwidth = 1,
                                rely = 0.825)
           
         self.entryMsg = Entry(self.labelBottom,
-                              bg = "#2C3E50",
-                              fg = "#EAECEE",
+                              bg = "#EDE7F6",
+                              fg = "#2B2B2B",
                               font = "Helvetica 13")
           
         # place the given widget
@@ -178,7 +186,8 @@ class GUI:
                                 text = "Send",
                                 font = "Helvetica 10 bold", 
                                 width = 20,
-                                bg = "#ABB2B9",
+                                bg = "#FFB5A7",
+                                fg="#2D2D2D",
                                 command = lambda : self.sendButton(self.entryMsg.get()))
           
         self.buttonMsg.place(relx = 0.55,
@@ -193,7 +202,8 @@ class GUI:
                                 text = "Write Number",
                                 font = "Helvetica 10 bold", 
                                 width = 20,
-                                bg = "#ABB2B9",
+                                bg = "#FFB5A7",
+                                fg="#2D2D2D",
                                 command = lambda : self.writingPad())
           
         self.buttonWrite.place(relx = 0.77,
@@ -221,7 +231,7 @@ class GUI:
         self.my_msg = msg
         # print(msg)
         self.entryMsg.delete(0, END)
-        
+
     def proc(self):
         while True:
             read, _, _ = select.select([self.socket], [], [], 0.1)
@@ -248,13 +258,13 @@ class GUI:
                               height = False)
         self.writing_window.configure(width = 300,
                               height = 400,
-                              bg = "#17202A")
+                              bg = "#FFF1F3")
         
         self.clearButton = Button(self.writing_window,
                                 text = "Clear",
                                 font = "Helvetica 10 bold", 
                                 width = 20,
-                                bg = "#ABB2B9",
+                                bg = "#EDE7F6",
                                 command = lambda : self.sendButton(self.clear()))
         self.write()
         self.clearButton.place(relx = 0.05,
@@ -268,7 +278,7 @@ class GUI:
                                 text = "Submit",
                                 font = "Helvetica 10 bold", 
                                 width = 20,
-                                bg = "#ABB2B9",
+                                bg = "#EDE7F6",
                                 command = lambda : self.sendButton(self.submit()))
         
         self.submitButton.place(relx = 0.40,
@@ -281,7 +291,7 @@ class GUI:
         self.resultLabel = Label(self.writing_window, 
                             text="", 
                             font=("Helvetica 10 bold"), 
-                            bg="#ABB2B9")
+                            bg="#EDE7F6")
         
         self.resultLabel.place(relx = 0.75,
                             rely = 0.85,

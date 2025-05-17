@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F 
 import numpy as np
-# === 用户认证相关 ===
+# === User Identification ===
 import os
 import hashlib
 
@@ -55,23 +55,23 @@ class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.flatten = nn.Flatten()
-        self.c1 = nn.Conv2d(1, 6, kernel_size=5, stride=1, padding=2) # (bsz, 6, 28, 28)
-        self.s2 = nn.AvgPool2d(kernel_size=2, stride=2) # (bsz, 6, 14, 14)
-        self.c3 = nn.Conv2d(6, 16, kernel_size=5) # (bsz, 16, 10, 10)
-        self.s4 = nn.AvgPool2d(kernel_size=2, stride=2) # (bsz, 16, 5, 5)
-        self.f5 = nn.Conv2d(16, 120, kernel_size=5) # (bsz, 120, 1, 1)
-        self.f6 = nn.Linear(120, 84) # (bsz, 84)
-        self.f7 = nn.Linear(84, 10) # (bsz, 10)
+        self.c1 = nn.Conv2d(1, 6, kernel_size=5, stride=1, padding=2) 
+        self.s2 = nn.AvgPool2d(kernel_size=2, stride=2) 
+        self.c3 = nn.Conv2d(6, 16, kernel_size=5) 
+        self.s4 = nn.AvgPool2d(kernel_size=2, stride=2) 
+        self.f5 = nn.Conv2d(16, 120, kernel_size=5) 
+        self.f6 = nn.Linear(120, 84) 
+        self.f7 = nn.Linear(84, 10) 
 
     def forward(self, x):
-        x = F.relu(self.c1(x))
-        x = self.s2(x)
-        x = F.relu(self.c3(x))
-        x = self.s4(x)
-        x = F.relu(self.f5(x))
-        x = self.flatten(x) # flatten to (bsz, 120)
-        x = F.relu(self.f6(x))
-        return self.f7(x) 
+        x = F.relu(self.c1(x)) # (bsz, 6, 28, 28)
+        x = self.s2(x)         # (bsz, 6, 14, 14)
+        x = F.relu(self.c3(x)) # (bsz, 16, 10, 10)
+        x = self.s4(x)         # (bsz, 16, 5, 5)
+        x = F.relu(self.f5(x)) # (bsz, 120, 1, 1)
+        x = self.flatten(x)    # flatten to (bsz, 120)
+        x = F.relu(self.f6(x)) # (bsz, 84)
+        return self.f7(x)      # (bsz, 10)
 
 class Server:
     def __init__(self):

@@ -263,11 +263,14 @@ class GUI:
         margin_from_bottom = 140
 
         pet_y = window_height - pet_height - margin_from_bottom
-        pet_x = self.writing_window.winfo_width() - resize_width - 20  # Right side
+        pet_x = self.writing_window.winfo_width() - resize_width - 20
 
         self.pet_label.place(x=pet_x, y=pet_y, width=resize_width, height=resize_height)
 
+        # animate pet
         self.animate_pet()
+
+        # enable dragging
         self.pet_label.bind("<Button-1>", self.start_drag)
         self.pet_label.bind("<B1-Motion>", self.do_drag)
           
@@ -343,7 +346,7 @@ class GUI:
                               height = 400,
 
                               bg = "#FFF1F3")
-
+        self.write()
    
         self.clearButton = Button(self.writing_window,
                                 text = "Clear",
@@ -351,8 +354,8 @@ class GUI:
                                 width = 20,
 
                                 bg = "#EDE7F6",
-                                command = lambda : self.sendButton(self.clear()))
-        self.write()
+                                command = lambda : self.clear())
+
 
         self.clearButton.place(relx = 0.05,
                              rely = 0.85,
@@ -367,7 +370,7 @@ class GUI:
                                 width = 20,
 
                                 bg = "#EDE7F6",
-                                command = lambda : self.sendButton(self.submit()))
+                                command = lambda : self.submit())
 
         
         self.submitButton.place(relx = 0.40,

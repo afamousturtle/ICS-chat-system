@@ -82,7 +82,7 @@ def myrecv(s):
 
 def send_image(img, sock):
     with socket_lock:
-    # Convert image to base64 string
+        # Convert image to base64 string
         buffered = io.BytesIO()
         img.save(buffered, format="PNG")
         img_bytes = buffered.getvalue()
@@ -96,8 +96,9 @@ def send_image(img, sock):
 
         # Wait for prediction response
         response = json.loads(myrecv(sock))
-        if response.get("action") == "predict_digit":
-            return response.get("result", "No prediction")
+        print(response)
+        if response["action"] == "predict_digit":
+            return response["result"]
         else:
             return "Unexpected response"
 
